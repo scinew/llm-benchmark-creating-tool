@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/prisma";
-import { RunStatusBadge } from "@/components/RunStatusBadge";
 import { format } from "date-fns";
+
+import { RunStatusBadge } from "@/components/RunStatusBadge";
+import CanvasEditorPage from "@/components/CanvasEditorPage";
+import { prisma } from "@/lib/prisma";
 
 interface ProjectPageProps {
   params: Promise<{ id: string }>;
@@ -41,7 +43,6 @@ export default async function ProjectDetailPage({ params }: ProjectPageProps) {
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-black">
       <main className="mx-auto max-w-6xl px-4 py-8">
-        {/* Header */}
         <div className="mb-8">
           <Link
             href="/projects"
@@ -75,9 +76,24 @@ export default async function ProjectDetailPage({ params }: ProjectPageProps) {
           </div>
         </div>
 
-        {/* Quick Actions */}
+        <div className="mb-8">
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
+              Benchmark Visual Designer
+            </h2>
+            <p className="text-sm text-zinc-600 dark:text-zinc-400">
+              Design and layout your benchmark components visually
+            </p>
+          </div>
+
+          <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
+            <div className="h-[800px]">
+              <CanvasEditorPage />
+            </div>
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-          {/* Recent Runs */}
           <div className="space-y-4 lg:col-span-2">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
@@ -133,7 +149,6 @@ export default async function ProjectDetailPage({ params }: ProjectPageProps) {
             )}
           </div>
 
-          {/* Quick Start */}
           <div className="space-y-4">
             <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
               Quick Start

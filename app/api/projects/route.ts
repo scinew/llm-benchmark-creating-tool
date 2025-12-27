@@ -1,12 +1,11 @@
+import type { Prisma } from "@prisma/client";
 import { NextRequest } from "next/server";
+
 import { prisma } from "@/lib/prisma";
 import { withErrorHandling } from "@/lib/api/handler";
-import { paginatedResponse, createdResponse } from "@/lib/api/response";
-import { createProjectSchema } from "@/lib/validations/benchmark";
+import { createdResponse, paginatedResponse } from "@/lib/api/response";
 import { DEFAULT_PAGINATION } from "@/lib/constants";
-
-// Type for JSON value compatible with Prisma
-type JsonValue = Record<string, unknown>;
+import { createProjectSchema } from "@/lib/validations/benchmark";
 
 // GET /api/projects - List all projects for demo user
 async function getProjects(req: NextRequest) {
@@ -75,7 +74,7 @@ async function createProject(req: NextRequest) {
       userId: user.id,
       name: validatedData.name,
       description: validatedData.description ?? null,
-      config: validatedData.config as JsonValue | undefined,
+      config: validatedData.config as Prisma.InputJsonValue | undefined,
     },
   });
 

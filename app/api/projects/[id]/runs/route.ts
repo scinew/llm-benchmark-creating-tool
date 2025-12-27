@@ -1,17 +1,16 @@
+import type { Prisma } from "@prisma/client";
 import { NextRequest } from "next/server";
-import { prisma } from "@/lib/prisma";
+
+import { ApiError } from "@/lib/api/errors";
 import { withErrorHandling } from "@/lib/api/handler";
 import {
-  successResponse,
-  paginatedResponse,
   createdResponse,
+  paginatedResponse,
+  successResponse,
 } from "@/lib/api/response";
-import { ApiError } from "@/lib/api/errors";
-import { createBenchmarkRunSchema } from "@/lib/validations/benchmark";
 import { DEFAULT_PAGINATION } from "@/lib/constants";
-
-// Type for JSON value compatible with Prisma
-type JsonValue = Record<string, unknown>;
+import { prisma } from "@/lib/prisma";
+import { createBenchmarkRunSchema } from "@/lib/validations/benchmark";
 
 // GET /api/projects/:id/runs - List runs for a project
 async function getRuns(req: NextRequest, params: { id: string }) {
@@ -81,7 +80,7 @@ async function createRun(req: NextRequest, params: { id: string }) {
       data: {
         projectId,
         name: validatedData.name,
-        config: validatedData.config as JsonValue,
+        config: validatedData.config as Prisma.InputJsonValue,
         status: "PENDING",
       },
     });
