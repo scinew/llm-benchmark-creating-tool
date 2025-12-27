@@ -1,23 +1,26 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
-import CanvasEditor, { CanvasElement } from "./CanvasEditor";
-import LayersPanel from "./LayersPanel";
-import InspectorPanel from "./InspectorPanel";
+import { useCallback, useMemo, useState } from "react";
+import CanvasEditor, { type CanvasElement } from "./CanvasEditor";
 import EditorToolbar from "./EditorToolbar";
+import InspectorPanel from "./InspectorPanel";
+import LayersPanel from "./LayersPanel";
+
+type ToolId = "select" | "rectangle" | "text";
 
 export default function CanvasEditorPage() {
   const [elements, setElements] = useState<CanvasElement[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [history, setHistory] = useState<CanvasElement[][]>([]);
-  const [historyIndex, setHistoryIndex] = useState(-1);
-  const [activeTool, setActiveTool] = useState<"select" | "rectangle" | "text">("select");
-  const [showGrid, setShowGrid] = useState(true);
+  const [history, setHistory] = useState<CanvasElement[][]>([[]]);
+  const [historyIndex, setHistoryIndex] = useState<number>(0);
+  const [activeTool, setActiveTool] = useState<ToolId>("select");
+  const [showGrid, setShowGrid] = useState<boolean>(true);
 
   const saveToHistory = useCallback(
-    (newElements: CanvasElement[]) => {
+    (newElements: CanvasElement[]): void => {
       const newHistory = history.slice(0, historyIndex + 1);
       newHistory.push(newElements);
+
       setHistory(newHistory);
       setHistoryIndex(newHistory.length - 1);
     },
@@ -25,33 +28,33 @@ export default function CanvasEditorPage() {
   );
 
   const handleElementChange = useCallback(
-    (newElements: CanvasElement[]) => {
+    (newElements: CanvasElement[]): void => {
       setElements(newElements);
       saveToHistory(newElements);
     },
     [saveToHistory]
   );
 
-  const handleUndo = useCallback(() => {
-    if (historyIndex > 0) {
-      const newIndex = historyIndex - 1;
-      setHistoryIndex(newIndex);
-      setElements(history[newIndex]);
-      setSelectedId(null);
-    }
+  const handleUndo = useCallback((): void => {
+    if (historyIndex <= 0) return;
+
+    const newIndex = historyIndex - 1;
+    setHistoryIndex(newIndex);
+    setElements(history[newIndex] ?? []);
+    setSelectedId(null);
   }, [history, historyIndex]);
 
-  const handleRedo = useCallback(() => {
-    if (historyIndex < history.length - 1) {
-      const newIndex = historyIndex + 1;
-      setHistoryIndex(newIndex);
-      setElements(history[newIndex]);
-      setSelectedId(null);
-    }
+  const handleRedo = useCallback((): void => {
+    if (historyIndex >= history.length - 1) return;
+
+    const newIndex = historyIndex + 1;
+    setHistoryIndex(newIndex);
+    setElements(history[newIndex] ?? []);
+    setSelectedId(null);
   }, [history, historyIndex]);
 
   const addElement = useCallback(
-    (type: "rectangle" | "text", props: Partial<CanvasElement> = {}) => {
+    (type: CanvasElement["type"], props: Partial<CanvasElement> = {}): void => {
       const newElement: CanvasElement = {
         id: `element-${Date.now()}`,
         type,
@@ -68,6 +71,7 @@ export default function CanvasEditorPage() {
       };
 
       const newElements = [...elements, newElement];
+
       handleElementChange(newElements);
       setSelectedId(newElement.id);
       setActiveTool("select");
@@ -75,16 +79,16 @@ export default function CanvasEditorPage() {
     [elements, handleElementChange]
   );
 
-  const addRectangle = useCallback(() => {
+  const addRectangle = useCallback((): void => {
     addElement("rectangle");
   }, [addElement]);
 
-  const addText = useCallback(() => {
+  const addText = useCallback((): void => {
     addElement("text");
   }, [addElement]);
 
   const updateElement = useCallback(
-    (updatedElement: CanvasElement) => {
+    (updatedElement: CanvasElement): void => {
       const newElements = elements.map((el) =>
         el.id === updatedElement.id ? updatedElement : el
       );
@@ -94,9 +98,10 @@ export default function CanvasEditorPage() {
   );
 
   const deleteElement = useCallback(
-    (id: string) => {
+    (id: string): void => {
       const newElements = elements.filter((el) => el.id !== id);
       handleElementChange(newElements);
+
       if (selectedId === id) {
         setSelectedId(null);
       }
@@ -105,7 +110,7 @@ export default function CanvasEditorPage() {
   );
 
   const toggleElement = useCallback(
-    (id: string) => {
+    (id: string): void => {
       const newElements = elements.map((el) =>
         el.id === id ? { ...el, visible: !el.visible } : el
       );
@@ -115,7 +120,7 @@ export default function CanvasEditorPage() {
   );
 
   const reorderElement = useCallback(
-    (id: string, newIndex: number) => {
+    (id: string, newIndex: number): void => {
       const element = elements.find((el) => el.id === id);
       if (!element) return;
 
@@ -131,32 +136,36 @@ export default function CanvasEditorPage() {
     [elements, handleElementChange]
   );
 
-  const handleExport = useCallback(() => {
+  const handleExport = useCallback((): void => {
     const exportData = {
-      elements: elements.map(({ id, ...element }) => element),
+      elements,
       version: "1.0",
       timestamp: new Date().toISOString(),
     };
+
     const blob = new Blob([JSON.stringify(exportData, null, 2)], {
       type: "application/json",
     });
+
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
+
     a.href = url;
     a.download = `benchmark-design-${Date.now()}.json`;
+
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
+
     URL.revokeObjectURL(url);
   }, [elements]);
 
-  const selectedElement = useMemo(
-    () => elements.find((el) => el.id === selectedId) || null,
-    [elements, selectedId]
-  );
+  const selectedElement = useMemo(() => {
+    return elements.find((el) => el.id === selectedId) ?? null;
+  }, [elements, selectedId]);
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50">
+    <div className="flex h-full flex-col bg-gray-50">
       <EditorToolbar
         activeTool={activeTool}
         onToolChange={setActiveTool}
@@ -169,8 +178,8 @@ export default function CanvasEditorPage() {
         onAddRectangle={addRectangle}
       />
 
-      <div className="flex-1 flex overflow-hidden p-4">
-        <div className="w-64 flex-shrink-0 mr-4">
+      <div className="flex flex-1 overflow-hidden p-4">
+        <div className="mr-4 w-64 flex-shrink-0">
           <LayersPanel
             elements={elements}
             selectedId={selectedId}
@@ -179,11 +188,11 @@ export default function CanvasEditorPage() {
             onDelete={deleteElement}
             onReorder={reorderElement}
             showGrid={showGrid}
-            onToggleGrid={() => setShowGrid(!showGrid)}
+            onToggleGrid={() => setShowGrid((prev) => !prev)}
           />
         </div>
 
-        <div className="flex-1 flex items-center justify-center bg-white rounded-lg shadow-md p-4 overflow-auto">
+        <div className="flex flex-1 items-center justify-center overflow-auto rounded-lg bg-white p-4 shadow-md">
           <div className="relative">
             <CanvasEditor
               elements={elements}
@@ -195,7 +204,7 @@ export default function CanvasEditorPage() {
           </div>
         </div>
 
-        <div className="w-80 flex-shrink-0 ml-4">
+        <div className="ml-4 w-80 flex-shrink-0">
           <InspectorPanel
             selectedElement={selectedElement}
             onUpdate={updateElement}

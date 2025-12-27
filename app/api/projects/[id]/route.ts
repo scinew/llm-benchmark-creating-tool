@@ -1,12 +1,11 @@
+import type { Prisma } from "@prisma/client";
 import { NextRequest } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { withErrorHandling } from "@/lib/api/handler";
-import { successResponse, noContentResponse } from "@/lib/api/response";
-import { ApiError } from "@/lib/api/errors";
-import { updateProjectSchema } from "@/lib/validations/benchmark";
 
-// Type for JSON value compatible with Prisma
-type JsonValue = Record<string, unknown>;
+import { ApiError } from "@/lib/api/errors";
+import { withErrorHandling } from "@/lib/api/handler";
+import { noContentResponse, successResponse } from "@/lib/api/response";
+import { prisma } from "@/lib/prisma";
+import { updateProjectSchema } from "@/lib/validations/benchmark";
 
 // GET /api/projects/:id - Get project details
 async function getProject(req: NextRequest, params: { id: string }) {
@@ -53,7 +52,7 @@ async function updateProject(req: NextRequest, params: { id: string }) {
     data: {
       name: validatedData.name ?? undefined,
       description: validatedData.description ?? null,
-      config: validatedData.config as JsonValue | undefined,
+      config: validatedData.config as Prisma.InputJsonValue | undefined,
     },
   });
 

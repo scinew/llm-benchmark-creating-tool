@@ -1,8 +1,10 @@
 "use client";
 
+type ToolId = "select" | "rectangle" | "text";
+
 interface EditorToolbarProps {
-  activeTool: "select" | "rectangle" | "text";
-  onToolChange: (tool: "select" | "rectangle" | "text") => void;
+  activeTool: ToolId;
+  onToolChange: (tool: ToolId) => void;
   onUndo: () => void;
   onRedo: () => void;
   onExport: () => void;
@@ -10,6 +12,13 @@ interface EditorToolbarProps {
   canRedo: boolean;
   onAddText: () => void;
   onAddRectangle: () => void;
+}
+
+interface ToolButton {
+  id: ToolId;
+  icon: string;
+  label: string;
+  action: () => void;
 }
 
 export default function EditorToolbar({
@@ -23,7 +32,7 @@ export default function EditorToolbar({
   onAddText,
   onAddRectangle,
 }: EditorToolbarProps) {
-  const tools = [
+  const tools: ToolButton[] = [
     {
       id: "select",
       icon: "↖",
@@ -45,14 +54,15 @@ export default function EditorToolbar({
   ];
 
   return (
-    <div className="bg-white border-b border-gray-200 px-4 py-2">
+    <div className="border-b border-gray-200 bg-white px-4 py-2">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
           {tools.map((tool) => (
             <button
               key={tool.id}
+              type="button"
               onClick={tool.action}
-              className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-colors ${
+              className={`flex items-center space-x-2 rounded-lg px-3 py-2 transition-colors ${
                 activeTool === tool.id
                   ? "bg-blue-500 text-white"
                   : "bg-gray-100 text-gray-700 hover:bg-gray-200"
@@ -60,7 +70,7 @@ export default function EditorToolbar({
               title={tool.label}
             >
               <span className="text-lg">{tool.icon}</span>
-              <span className="text-sm font-medium hidden sm:inline">
+              <span className="hidden text-sm font-medium sm:inline">
                 {tool.label}
               </span>
             </button>
@@ -69,40 +79,43 @@ export default function EditorToolbar({
 
         <div className="flex items-center space-x-2">
           <button
+            type="button"
             onClick={onUndo}
             disabled={!canUndo}
-            className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-colors ${
+            className={`flex items-center space-x-2 rounded-lg px-3 py-2 transition-colors ${
               canUndo
                 ? "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                : "bg-gray-50 text-gray-400 cursor-not-allowed"
+                : "cursor-not-allowed bg-gray-50 text-gray-400"
             }`}
             title="Undo"
           >
             <span className="text-lg">↶</span>
-            <span className="text-sm font-medium hidden sm:inline">Undo</span>
+            <span className="hidden text-sm font-medium sm:inline">Undo</span>
           </button>
 
           <button
+            type="button"
             onClick={onRedo}
             disabled={!canRedo}
-            className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-colors ${
+            className={`flex items-center space-x-2 rounded-lg px-3 py-2 transition-colors ${
               canRedo
                 ? "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                : "bg-gray-50 text-gray-400 cursor-not-allowed"
+                : "cursor-not-allowed bg-gray-50 text-gray-400"
             }`}
             title="Redo"
           >
             <span className="text-lg">↷</span>
-            <span className="text-sm font-medium hidden sm:inline">Redo</span>
+            <span className="hidden text-sm font-medium sm:inline">Redo</span>
           </button>
 
           <button
+            type="button"
             onClick={onExport}
-            className="flex items-center space-x-2 px-3 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+            className="flex items-center space-x-2 rounded-lg bg-green-500 px-3 py-2 text-white transition-colors hover:bg-green-600"
             title="Export"
           >
             <span className="text-lg">⬇</span>
-            <span className="text-sm font-medium hidden sm:inline">Export</span>
+            <span className="hidden text-sm font-medium sm:inline">Export</span>
           </button>
         </div>
       </div>
