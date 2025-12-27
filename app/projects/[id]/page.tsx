@@ -3,6 +3,11 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { RunStatusBadge } from "@/components/RunStatusBadge";
 import { format } from "date-fns";
+import dynamic from "next/dynamic";
+
+const CanvasEditorPage = dynamic(() => import("@/components/CanvasEditorPage"), {
+  ssr: false,
+});
 
 interface ProjectPageProps {
   params: Promise<{ id: string }>;
@@ -71,6 +76,23 @@ export default async function ProjectDetailPage({ params }: ProjectPageProps) {
               >
                 Settings
               </Link>
+            </div>
+          </div>
+        </div>
+
+        {/* Canvas Designer Section */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
+              Benchmark Visual Designer
+            </h2>
+            <p className="text-sm text-zinc-600 dark:text-zinc-400">
+              Design and layout your benchmark components visually
+            </p>
+          </div>
+          <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 overflow-hidden">
+            <div style={{ height: '800px' }}>
+              <CanvasEditorPage />
             </div>
           </div>
         </div>
